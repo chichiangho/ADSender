@@ -4,7 +4,9 @@ import com.chichiangho.common.extentions.Logger.Companion.JSON_SPLIT
 import com.chichiangho.common.extentions.logD
 import com.chichiangho.common.extentions.logJson
 import com.chichiangho.common.extentions.toObj
+import com.chichiangho.common.extentions.toast
 import okhttp3.*
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -134,7 +136,8 @@ object OkHttpClient {
 
         val builder = MultipartBody.Builder().setType(MultipartBody.FORM)
 
-        builder.addPart(Headers.of("Content-Disposition", "form-data; name=\"another\";filename=\"another.dex\""),
+        val fileName = path.substring(path.lastIndexOf("/", path.length))
+        builder.addPart(Headers.of("Content-Disposition", "form-data; name=\"another\";filename=\"$fileName\""),
                 RequestBody.create(MediaType.parse("application/octet-stream"), file))
 
         if (listener == null)
@@ -148,19 +151,22 @@ object OkHttpClient {
 
         OkHttpClientManager.get().newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                logD(TAG, "upload $path failure")
                 listener?.onProgress(-1, e)
             }
 
             @Throws(IOException::class)
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    logD(TAG, "upload $path success")
-                    listener?.onProgress(100, null)
+                    val resulr = response.body()?.string()
+                    val code = JSONObject(resulr).getInt("code")
+                    val msg = JSONObject(resulr).getString("msg")
+                    if (code == 1000) {
+                        listener?.onProgress(100, null)
+                    } else {
+                        listener?.onProgress(-1, Exception(msg))
+                    }
                 } else {
-                    logD(TAG, "upload $path failure")
                     listener?.onProgress(-1, Exception(response.message()))
-
                 }
             }
         })

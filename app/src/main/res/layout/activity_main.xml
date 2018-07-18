@@ -37,4 +37,14 @@
         android:gravity="center"
         android:text="send"
         android:textColor="#fff" />
+
+    <TextView
+        android:id="@+id/upload"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:background="#777"
+        android:gravity="center"
+        android:text="upload"
+        android:textColor="#fff" />
 </LinearLayout>
