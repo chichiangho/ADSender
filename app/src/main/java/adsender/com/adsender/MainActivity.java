@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.chichaingho.library_rx_okhttp.BaseResponse;
 import com.chichaingho.library_rx_okhttp.OkHttpClient;
 
 import org.json.JSONException;
@@ -40,7 +41,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText editText_ip, editText_data;
+    private EditText editText_ip, editText_command;
     private OutputStream outputStream = null;
     private Socket socket = null;
     private String ip;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editText_port;
     private int port;
     private InputStream inputStream;
-    private EditText editText_extra;
+    private EditText editText_params;
 
 
     @Override
@@ -60,11 +61,13 @@ public class MainActivity extends AppCompatActivity {
         }
         editText_ip = (EditText) findViewById(R.id.host);
         editText_port = (EditText) findViewById(R.id.port);
-        editText_data = (EditText) findViewById(R.id.msg);
-        editText_extra = (EditText) findViewById(R.id.extra);
+        editText_command = (EditText) findViewById(R.id.command);
+        editText_params = (EditText) findViewById(R.id.params);
 
         editText_ip.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("ip", ""));
         editText_port.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("port", ""));
+        editText_command.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("command", ""));
+        editText_params.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("params", ""));
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
                         .edit()
                         .putString("ip", editText_ip.getText().toString())
                         .putString("port", editText_port.getText().toString())
+                        .putString("command",editText_command.getText().toString())
+                        .putString("params",editText_params.getText().toString())
                         .apply();
                 send(v);
             }
@@ -83,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
                         .edit()
                         .putString("ip", editText_ip.getText().toString())
                         .putString("port", editText_port.getText().toString())
+                        .putString("command",editText_command.getText().toString())
+                        .putString("params",editText_params.getText().toString())
                         .apply();
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");//无类型限制
@@ -111,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 }
-            }).observeOn(Schedulers.io())
+            }).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<String>() {
                         Toast toast = Toast.makeText(getBaseContext(), "", Toast.LENGTH_SHORT);
@@ -248,8 +255,8 @@ public class MainActivity extends AppCompatActivity {
                     outputStream = socket.getOutputStream();
                     inputStream = socket.getInputStream();
 
-                    data = editText_data.getText().toString();
-                    String extra = editText_extra.getText().toString();
+                    data = editText_command.getText().toString();
+                    String extra = editText_params.getText().toString();
 
                     JSONObject ob = new JSONObject();
                     try {
@@ -297,7 +304,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void httpSend() {
+        Observable.create(new ObservableOnSubscribe<BaseResponse>() {
+            @Override
+            public void subscribe(final ObservableEmitter<BaseResponse> emitter) throws Exception {
+                emitter.onNext(OkHttpClient.INSTANCE.post("http:" + editText_ip.getText().toString() + ":" + editText_port.getText().toString() + "/" + editText_command.getText().toString(), editText_params.getText().toString(), BaseResponse.class, true));
+            }
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<BaseResponse>() {
+                    Toast toast = Toast.makeText(getBaseContext(), "", Toast.LENGTH_SHORT);
 
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(BaseResponse s) {
+                        toast.setText(s.getMsg());
+                        toast.show();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     /*当客户端界面返回时，关闭相应的socket资源*/

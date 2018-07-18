@@ -17,16 +17,16 @@
         android:hint="port" />
 
     <EditText
-        android:id="@+id/msg"
+        android:id="@+id/command"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:hint="msg" />
+        android:hint="command" />
 
     <EditText
-        android:id="@+id/extra"
+        android:id="@+id/params"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:hint="extra" />
+        android:hint="params" />
 
     <TextView
         android:id="@+id/send"
