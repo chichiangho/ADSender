@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.koushikdutta.async.http.AsyncHttpClient;
+import com.koushikdutta.async.http.AsyncHttpResponse;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -116,7 +119,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void send(View view) {
-        connect(view);
+//        connect(view);
+        httpSend();
+    }
+
+    private void httpSend() {
 
     }
 

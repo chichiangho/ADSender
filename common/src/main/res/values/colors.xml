@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFF</color>
+    <color name="dark_grey">#333333</color>
+    <color name="middle_grey">#666666</color>
+    <color name="little_grey">#f6f6f6</color>
+    <color name="light_grey">#8e8e8e</color>
+
+    <color name="divider_tab">#979797</color>
+    <color name="tab_text_normal">#BDBDBD</color>
+    <color name="tab_text_checked">#00163B</color>
+
+    <color name="main_color">#db525a</color>
+    <color name="transparent">#00000000</color>
+    <color name="tab_normal">@color/white</color>
+    <color name="tab_checked">@color/main_color</color>
+</resources>
