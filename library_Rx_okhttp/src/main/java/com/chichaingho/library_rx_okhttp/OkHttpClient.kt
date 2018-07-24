@@ -112,15 +112,14 @@ object OkHttpClient {
                         }
                     }
                     fos.flush()
+                    listener?.onProgress(100, null)
                     logD(TAG, "download $url success")
                 } catch (e: Exception) {
                     listener?.onProgress(-1, e)
                     logD(TAG, "download $url failure")
                 } finally {
-                    if (`is` != null)
-                        `is`.close()
-                    if (fos != null)
-                        fos.close()
+                    `is`?.close()
+                    fos?.close()
                 }
             }
         })
@@ -132,7 +131,7 @@ object OkHttpClient {
         logD(TAG, "uploading $path to $url")
         val file = File(path)
         if (!file.exists())
-            throw Exception(path + " not exists!")
+            throw Exception("$path not exists!")
 
         val builder = MultipartBody.Builder().setType(MultipartBody.FORM)
 

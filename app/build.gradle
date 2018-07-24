@@ -31,6 +31,6 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.1.8'
     implementation 'com.uber.autodispose:autodispose:0.6.1'
     implementation 'com.uber.autodispose:autodispose-android-archcomponents:0.6.1'
-    compile project(path: ':library_Rx_okhttp')
-    compile project(path: ':common')
+    implementation project(path: ':library_Rx_okhttp')
+    implementation project(path: ':common')
 }

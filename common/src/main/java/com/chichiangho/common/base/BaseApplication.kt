@@ -3,13 +3,13 @@ package com.chichiangho.common.base
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import com.squareup.leakcanary.LeakCanary
-import com.squareup.leakcanary.RefWatcher
+//import com.squareup.leakcanary.LeakCanary
+//import com.squareup.leakcanary.RefWatcher
 import java.util.*
 import kotlin.collections.ArrayList
 
 open class BaseApplication : Application() {
-    lateinit var refWatcher: RefWatcher
+//    lateinit var refWatcher: RefWatcher
     private val activityStack = ArrayList<Activity>()
     val lifeCycleListenerMap = HashMap<Activity, HashMap<String, ArrayList<() -> Unit>>>()
 
@@ -25,7 +25,7 @@ open class BaseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        refWatcher = LeakCanary.install(this)
+//        refWatcher = LeakCanary.install(this)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityPaused(activity: Activity) {
@@ -43,7 +43,7 @@ open class BaseApplication : Application() {
                 activityStack.remove(activity)
                 lifeCycleListenerMap[activity]?.get("onDestroyed")?.forEach { it() }
                 lifeCycleListenerMap.remove(activity)
-                refWatcher.watch(activity)
+//                refWatcher.watch(activity)
             }
 
             override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle?) {

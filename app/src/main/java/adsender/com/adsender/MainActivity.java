@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,14 +20,17 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.chichaingho.library_rx_okhttp.BaseResponse;
 import com.chichaingho.library_rx_okhttp.OkHttpClient;
+import com.chichiangho.common.base.BaseApplication;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private int port;
     private InputStream inputStream;
     private EditText editText_params;
+    private ImageView imageView;
 
 
     @Override
@@ -63,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         editText_port = (EditText) findViewById(R.id.port);
         editText_command = (EditText) findViewById(R.id.command);
         editText_params = (EditText) findViewById(R.id.params);
+        imageView = findViewById(R.id.imageView);
 
         editText_ip.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("ip", ""));
         editText_port.setText(getSharedPreferences("ddd", Context.MODE_PRIVATE).getString("port", ""));
@@ -75,10 +82,14 @@ public class MainActivity extends AppCompatActivity {
                         .edit()
                         .putString("ip", editText_ip.getText().toString())
                         .putString("port", editText_port.getText().toString())
-                        .putString("command",editText_command.getText().toString())
-                        .putString("params",editText_params.getText().toString())
+                        .putString("command", editText_command.getText().toString())
+                        .putString("params", editText_params.getText().toString())
                         .apply();
-                send(v);
+                if (editText_command.getText().toString().equals("takePicture")) {
+                    download();
+                } else {
+                    send(v);
+                }
             }
         });
         findViewById(R.id.upload).setOnClickListener(new View.OnClickListener() {
@@ -88,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
                         .edit()
                         .putString("ip", editText_ip.getText().toString())
                         .putString("port", editText_port.getText().toString())
-                        .putString("command",editText_command.getText().toString())
-                        .putString("params",editText_params.getText().toString())
+                        .putString("command", editText_command.getText().toString())
+                        .putString("params", editText_params.getText().toString())
                         .apply();
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");//无类型限制
@@ -97,6 +108,50 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
+    }
+
+    private void download() {
+        Observable.create(new ObservableOnSubscribe<BaseResponse>() {
+            @Override
+            public void subscribe(final ObservableEmitter<BaseResponse> emitter) throws Exception {
+                OkHttpClient.INSTANCE.downLoad("http:" + editText_ip.getText().toString() + ":" + editText_port.getText().toString() + "/" + editText_command.getText().toString(),
+                        BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png",
+                        new OkHttpClient.ProgressListener() {
+                            @Override
+                            public void onProgress(int progress, Exception e) {
+                                if (progress == 100) {
+                                    File x = new File(BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png");
+                                    imageView.setImageBitmap(BitmapFactory.decodeFile(BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png"));
+                                }
+                            }
+                        });
+            }
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<BaseResponse>() {
+                    Toast toast = Toast.makeText(getBaseContext(), "", Toast.LENGTH_SHORT);
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(BaseResponse s) {
+                        toast.setText(s.getMsg());
+                        toast.show();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     @Override
