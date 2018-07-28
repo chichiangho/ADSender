@@ -111,24 +111,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void download() {
-        Observable.create(new ObservableOnSubscribe<BaseResponse>() {
+        Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
-            public void subscribe(final ObservableEmitter<BaseResponse> emitter) throws Exception {
+            public void subscribe(final ObservableEmitter<Integer> emitter) throws Exception {
+                final String path = BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png";
+                new File(path).delete();
                 OkHttpClient.INSTANCE.downLoad("http:" + editText_ip.getText().toString() + ":" + editText_port.getText().toString() + "/" + editText_command.getText().toString(),
-                        BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png",
+                        path,
                         new OkHttpClient.ProgressListener() {
                             @Override
                             public void onProgress(int progress, Exception e) {
                                 if (progress == 100) {
-                                    File x = new File(BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png");
-                                    imageView.setImageBitmap(BitmapFactory.decodeFile(BaseApplication.instance.getExternalFilesDir("download").getAbsolutePath() + "/ss.png"));
-                                }
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            imageView.setImageBitmap(BitmapFactory.decodeFile(path));
+                                        }
+                                    });
+                                } else if (e != null)
+                                    emitter.onError(e);
+                                else
+                                    emitter.onNext(progress);
                             }
                         });
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<BaseResponse>() {
+                .subscribe(new Observer<Integer>() {
                     Toast toast = Toast.makeText(getBaseContext(), "", Toast.LENGTH_SHORT);
 
                     @Override
@@ -137,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(BaseResponse s) {
-                        toast.setText(s.getMsg());
+                    public void onNext(Integer s) {
+                        toast.setText(s + "");
                         toast.show();
                     }
 

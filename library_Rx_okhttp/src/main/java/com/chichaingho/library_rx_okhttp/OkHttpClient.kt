@@ -92,6 +92,7 @@ object OkHttpClient {
                 var fos: FileOutputStream? = null
                 val buf = ByteArray(2048)
                 var len: Int
+
                 try {
                     `is` = response.body()?.byteStream()
                     val total = response.body()?.contentLength() ?: 1
